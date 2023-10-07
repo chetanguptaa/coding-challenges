@@ -4,7 +4,7 @@ const fs = require("fs");
 const yargs = require("yargs");
 
 const options = yargs
-  .usage("Usage: -c | -l | -w <fileLocation>")
+  .usage("Usage: -c | -l | -w | -m <fileLocation>")
   .options("c", {
     alias: "bytes",
     describe: "Enter the location of the file",
@@ -22,31 +22,45 @@ const options = yargs
     describe: "Enter the location of the file",
     type: "string",
     demandOption: false,
+  })
+  .options("m", {
+    alias: "characters",
+    describe: "Enter the location of the file",
+    type: "string",
+    demandOption: false,
   }).argv;
 
-if (options.l) {
-  const data = fs.readFileSync(`${options.lines}`, {
-    encoding: "utf-8",
-  });
-  let count = 0;
-  for (let i = 0; i < data.length; i++) {
-    if (data[i] == "\n") count++;
+if (options.l || options.c || options.w || options.m) {
+  if (!process.stdin.isTTY) {
+  } else {
+    const fileLocation = options.m || options.w || options.c || options.l;
+    if (fileLocation) {
+      const data = fs.readFileSync(fileLocation, {
+        encoding: "utf-8",
+      });
+      if (options.l) {
+        let count = 0;
+        for (let i = 0; i < data.length; i++) {
+          if (data[i] === "\n") {
+            count++;
+          }
+        }
+        console.log(`${count} ${fileLocation}`);
+      } else if (options.c) {
+        const byteSize = (str) => new Blob([str]).size;
+        console.log(`${byteSize(data)} ${fileLocation}`);
+      } else if (options.w) {
+        let noOfWords = countWords(data);
+        console.log(`${noOfWords} ${fileLocation}`);
+      } else if (options.m) {
+        console.log(`${data.length} ${fileLocation}`);
+      }
+    } else {
+      console.log("Please provide a file location.");
+    }
   }
-  console.log(`${count} ${options.l}`);
-} else if (options.c) {
-  const data = fs.readFileSync(`${options.bytes}`, {
-    encoding: "utf-8",
-  });
-  const byteSize = (str) => new Blob([str]).size;
-  console.log(`${byteSize(data)} ${options.c}`);
-} else if (options.w) {
-  const data = fs.readFileSync(`${options.words}`, {
-    encoding: "utf-8",
-  });
-  let noOfWords = countWords(data);
-  console.log(`${noOfWords} ${options.w}`);
 } else {
-  console.log("Please provide suitable flag");
+  console.log("Please provide a suitable flag.");
 }
 
 function countWords(str) {
