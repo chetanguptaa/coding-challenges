@@ -32,12 +32,14 @@ const options = yargs
 
 if (options.l || options.c || options.w || options.m || !process.stdin.isTTY) {
   if (!process.stdin.isTTY) {
-    const fileLocation = process.stdin.bytesRead;
-    process.stdin.pipe;
-    console.log(fileLocation);
-    const data = fs.readFileSync(fileLocation, {
-      encoding: "utf-8",
+    const data = process.stdin.on("readable", () => {
+      let chunk;
+      // Use a loop to make sure we read all available data.
+      while ((chunk = process.stdin.read()) !== null) {
+        process.stdout.write(`data: ${chunk}`);
+      }
     });
+    console.log(data);
     if (options.l) {
       let count = 0;
       for (let i = 0; i < data.length; i++) {
