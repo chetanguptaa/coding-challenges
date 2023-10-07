@@ -30,8 +30,23 @@ const options = yargs
     demandOption: false,
   }).argv;
 
-if (options.l || options.c || options.w || options.m) {
+if (options.l || options.c || options.w || options.m || !process.stdin.isTTY) {
   if (!process.stdin.isTTY) {
+    const fileLocation = process.stdin.bytesRead;
+    process.stdin.pipe;
+    console.log(fileLocation);
+    const data = fs.readFileSync(fileLocation, {
+      encoding: "utf-8",
+    });
+    if (options.l) {
+      let count = 0;
+      for (let i = 0; i < data.length; i++) {
+        if (data[i] === "\n") {
+          count++;
+        }
+      }
+      console.log(`${count} ${fileLocation}`);
+    }
   } else {
     const fileLocation = options.m || options.w || options.c || options.l;
     if (fileLocation) {
@@ -55,12 +70,10 @@ if (options.l || options.c || options.w || options.m) {
       } else if (options.m) {
         console.log(`${data.length} ${fileLocation}`);
       }
-    } else {
-      console.log("Please provide a file location.");
     }
   }
 } else {
-  console.log("Please provide a suitable flag.");
+  console.log("Please provide a file location.");
 }
 
 function countWords(str) {
